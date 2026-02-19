@@ -1,4 +1,13 @@
-﻿using SurveyBasket.Api.Services;
+﻿using FluentValidation;
+using Mapster;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using SurveyBasket.Api.Contracts.Requests;
+using SurveyBasket.Api.Contracts.Responses;
+using SurveyBasket.Api.Contracts.Validators;
+using SurveyBasket.Api.Services;
+using System.ComponentModel.DataAnnotations;
+using static SurveyBasket.Api.Controllers.PollsController;
+using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace SurveyBasket.Api.Controllers;
 
@@ -11,7 +20,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_pollService.GetAll());
+        return Ok(_pollService.GetAll().Adapt<IEnumerable<PollResponse>>());
     }
 
     [HttpGet("{id}")]
@@ -19,20 +28,20 @@ public class PollsController(IPollService pollService) : ControllerBase
     {
         Poll? poll = _pollService.Get(id);
 
-        return poll is null ? NotFound() : Ok(poll);
+        return poll is null ? NotFound() : Ok(poll.Adapt<PollResponse>());
     }
 
     [HttpPost]
-    public IActionResult Add(Poll request)
+    public IActionResult Add(CreatePollRequest request)
     {
-        var poll = _pollService.Add(request);
+        var poll = _pollService.Add(request.Adapt<Poll>());
         return CreatedAtAction(nameof(Get), new { id = poll.Id }, poll);
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(int id, Poll request)
+    public IActionResult Update(int id, CreatePollRequest request)
     {
-        return _pollService.Update(id, request) ? NoContent() : NotFound();
+        return _pollService.Update(id, request.Adapt<Poll>()) ? NoContent() : NotFound();
     }
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
