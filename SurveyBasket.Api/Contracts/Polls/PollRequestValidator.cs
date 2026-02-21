@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using SurveyBasket.Api.Contracts.Requests;
 
-namespace SurveyBasket.Api.Contracts.Validators;
+namespace SurveyBasket.Api.Contracts.Polls;
 
 public class PollRequestValidator : AbstractValidator<PollRequest>
 {

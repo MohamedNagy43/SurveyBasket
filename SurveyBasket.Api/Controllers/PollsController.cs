@@ -1,14 +1,5 @@
-﻿using FluentValidation;
-using Mapster;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using SurveyBasket.Api.Contracts.Requests;
-using SurveyBasket.Api.Contracts.Responses;
-using SurveyBasket.Api.Contracts.Validators;
-using SurveyBasket.Api.Services;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
-using static SurveyBasket.Api.Controllers.PollsController;
-using RouteAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
+﻿
+using Microsoft.AspNetCore.Authorization;
 
 namespace SurveyBasket.Api.Controllers;
 

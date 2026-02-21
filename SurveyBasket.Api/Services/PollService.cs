@@ -3,9 +3,9 @@ using SurveyBasket.Api.Persistence;
 
 namespace SurveyBasket.Api.Services;
 
-public class PollService(ApplicationDbContect context) : IPollService
+public class PollService(ApplicationDbContext context) : IPollService
 {
-    private readonly ApplicationDbContect _context = context;
+    private readonly ApplicationDbContext _context = context;
 
     public async Task<IEnumerable<Poll>> GetAllAsync(CancellationToken cancellationToken = default)
         => await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);

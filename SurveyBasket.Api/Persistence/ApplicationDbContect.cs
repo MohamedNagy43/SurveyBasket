@@ -1,9 +1,8 @@
 ﻿
-using System.Reflection;
-
 namespace SurveyBasket.Api.Persistence;
 
-public class ApplicationDbContect(DbContextOptions<ApplicationDbContect> options):DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    :IdentityDbContext<ApplicationUser>(options)
 {
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
