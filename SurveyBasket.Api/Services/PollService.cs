@@ -1,5 +1,7 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using SurveyBasket.Api.Persistence;
+using System.Linq.Expressions;
 
 namespace SurveyBasket.Api.Services;
 
@@ -8,11 +10,19 @@ public class PollService(ApplicationDbContext context) : IPollService
     private readonly ApplicationDbContext _context = context;
 
     public async Task<IEnumerable<Poll>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
+    {
+        return await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
+    }
 
     public async Task<Poll?> GetAsync(int id, CancellationToken cancellationToken = default)
-        => await _context.Polls.FindAsync(id, cancellationToken);
+    {
+        return await _context.Polls.FindAsync(id, cancellationToken);
+    }
 
+    public Task<Poll?> GetAsync(Expression<Func<Poll,bool>> criteria, CancellationToken cancellationToken = default)
+    {
+        return _context.Polls.FirstOrDefaultAsync(criteria, cancellationToken);
+    }
     public async Task<Poll> AddAsync(Poll poll, CancellationToken cancellationToken = default)
     {
         await _context.AddAsync(poll, cancellationToken);
@@ -29,8 +39,8 @@ public class PollService(ApplicationDbContext context) : IPollService
 
         InMemeoryPoll.Title = poll.Title;
         InMemeoryPoll.Summary = poll.Summary;
-        InMemeoryPoll.StartAt = poll.StartAt;
-        InMemeoryPoll.EndAt = poll.EndAt;
+        InMemeoryPoll.StartsAt = poll.StartsAt;
+        InMemeoryPoll.EndsAt = poll.EndsAt;
 
         _context.Polls.Update(InMemeoryPoll);
         await _context.SaveChangesAsync(cancellationToken);
@@ -60,4 +70,5 @@ public class PollService(ApplicationDbContext context) : IPollService
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
+
 }
