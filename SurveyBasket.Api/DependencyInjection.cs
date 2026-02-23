@@ -2,6 +2,7 @@
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket.Api.Authentication;
@@ -18,6 +19,8 @@ public static class DependencyInjection
         services.AddControllers();
 
         services.AddOpenApi();
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen();
 
 
         // Private Extension Methods
@@ -61,11 +64,19 @@ public static class DependencyInjection
         // token provider
         services.AddScoped<IJwtProvider, JwtProvider>();
 
+        // Jwt Option
+        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations().ValidateOnStart();
+
         // Identity Services
         services.AddIdentity<ApplicationUser, IdentityRole>()
            .AddEntityFrameworkStores<ApplicationDbContext>();
 
         // Add Authentication
+        var JwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
         services.AddAuthentication(option =>
         {
             option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -76,12 +87,14 @@ public static class DependencyInjection
             option.SaveToken = true;
             option.TokenValidationParameters = new TokenValidationParameters()
             {
-                ValidateIssuer =true,
-                ValidIssuer = configuration["Jwt:Issuer"],
+                ValidateIssuer = true,
+                ValidIssuer = JwtSettings?.Issuer,
                 ValidateAudience = true,
-                ValidAudience = configuration["Jwt:Audience"],
+                ValidAudience = JwtSettings?.Audience,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!))
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(1),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSettings?.SecretKey!))
             };
 
         });

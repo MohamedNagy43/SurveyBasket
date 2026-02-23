@@ -20,12 +20,14 @@
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="2.12.41" />
     <PackageReference Include="SharpGrip.FluentValidation.AutoValidation.Mvc" Version="2.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
   </ItemGroup>
 
 	<PropertyGroup>
-		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<!--<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<AnalysisLevel>latest</AnalysisLevel>
-		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>-->
+		<UserSecretsId>5fcfd018-0d24-46bc-a944-dcd73d28f5d2</UserSecretsId>
 	</PropertyGroup>
 </Project>

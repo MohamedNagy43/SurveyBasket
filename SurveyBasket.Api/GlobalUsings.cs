@@ -13,3 +13,4 @@ global using SurveyBasket.Api.Contracts.Polls;
 global using Microsoft.AspNetCore.Identity;
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Claims;
+global using Microsoft.Extensions.Options;
