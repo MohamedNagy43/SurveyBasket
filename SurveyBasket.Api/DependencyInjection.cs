@@ -23,6 +23,16 @@ public static class DependencyInjection
         services.AddSwaggerGen();
 
 
+        //CORS
+        services.AddCors(option =>
+            option.AddDefaultPolicy(policyBuilder =>
+                policyBuilder
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>()!)
+         ));
+
+
         // Private Extension Methods
         services
             .AddDataBaseConfig(configuration)
@@ -30,7 +40,7 @@ public static class DependencyInjection
             .AddAuthenticationConfig(configuration)
             .AddFluntValidationConfig();
 
-        
+
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
 
@@ -59,7 +69,7 @@ public static class DependencyInjection
             .AddFluentValidationAutoValidation()
             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
     }
-    private static IServiceCollection AddAuthenticationConfig(this IServiceCollection services,IConfiguration configuration)
+    private static IServiceCollection AddAuthenticationConfig(this IServiceCollection services, IConfiguration configuration)
     {
         // token provider
         services.AddScoped<IJwtProvider, JwtProvider>();
