@@ -10,11 +10,12 @@ public class PollRequestValidator : AbstractValidator<PollRequest>
 
     public PollRequestValidator(IPollService pollService)
     {
-
+        _pollService = pollService;
 
         RuleFor(r => r.Title)
             .NotEmpty()
-            .Must(beUniqueTitle).When(p=>!string.IsNullOrEmpty(p.Title))
+            .WithMessage("Title Must Be Not Null Or Empty")
+            .MustAsync(beUniqueTitleAsync).When(p => !string.IsNullOrEmpty(p.Title))
             .WithMessage("Title must be Unique")
             .Length(3, 100);
 
@@ -24,19 +25,22 @@ public class PollRequestValidator : AbstractValidator<PollRequest>
 
         RuleFor(r => r.StartsAt)
             .NotEmpty()
-            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today));
+            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today))
+            .WithMessage("StartDate Should not be older");
 
         RuleFor(r => r.EndsAt)
             .NotEmpty();
 
         RuleFor(r => r)
             .Must(r => r.EndsAt >= r.StartsAt)
-            .WithName(r=>nameof(r.EndsAt))
+            .WithName(r => nameof(r.EndsAt))
             .WithMessage("{PropertyName} must be A Future Date that the star date");
-        _pollService = pollService;
+
     }
-    private bool beUniqueTitle(string title)
+    private async Task<bool> beUniqueTitleAsync(string title,CancellationToken cancellationToken)
     {
-        return _pollService.GetAsync(p => p.Title == title) is null;
+        var result = await _pollService.GetAsync(p => p.Title == title,cancellationToken);
+
+        return result.IsFailure;
     }
 }

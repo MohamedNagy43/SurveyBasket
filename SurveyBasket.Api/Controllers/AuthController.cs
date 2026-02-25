@@ -1,4 +1,7 @@
 ﻿
+using OneOf;
+using SurveyBasket.Api.Abstractions;
+
 namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")]
@@ -10,24 +13,34 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var authResponse = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
+        var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
-        return authResponse is null ? BadRequest("Invalid Email Or Password") : Ok(authResponse);
+        return authResult.IsSuccess ? 
+            Ok(authResult.Value) 
+            :
+            Problem(statusCode: StatusCodes.Status400BadRequest, title: authResult.Error.Code, detail: authResult.Error.Description);
+
     }
 
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var authResponse = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
+        var OneOFResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-        return authResponse is null ? BadRequest("Invalid Tokens") : Ok(authResponse);
+        return OneOFResult.Match(
+            response=>Ok(response),
+            error=> Problem(statusCode: StatusCodes.Status400BadRequest, title: error.Code, detail: error.Description)
+             );
     }
 
     [HttpPut("revoke-refresh-token")]
     public async Task<IActionResult> revokeRefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var IsRevoked = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
+        var OneOFResult = await _authService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-        return IsRevoked ? NoContent() : BadRequest("Operation Failed");
+        return OneOFResult.Match(
+            Ok,
+            error => Problem(statusCode: StatusCodes.Status400BadRequest, title: error.Code, detail: error.Description)
+             );
     }
 }

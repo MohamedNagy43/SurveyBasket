@@ -4,11 +4,11 @@ namespace SurveyBasket.Api.Services;
 
 public interface IPollService
 {
-    Task<IEnumerable<Poll>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<Poll?> GetAsync(int id, CancellationToken cancellationToken = default);
-    Task<Poll?> GetAsync(Expression<Func<Poll,bool>> criteria, CancellationToken cancellationToken = default);
-    Task<Poll> AddAsync(Poll poll, CancellationToken cancellationToken = default);
-    Task<bool> UpdateAsync(int id, Poll poll, CancellationToken cancellationToken = default);
-    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
-    Task<bool> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<PollResponse>>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<PollResponse>> GetAsync(Expression<Func<Poll,bool>> criteria, CancellationToken cancellationToken = default);
+    Task<Result<PollResponse>> AddAsync(PollRequest poll, CancellationToken cancellationToken = default);
+    Task<Result<PollResponse>> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<PollResponse>> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default);
 }

@@ -14,21 +14,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-    }
     public DbSet<Poll> Polls { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        addAuditInformaiton();
+        AddAuditInformaiton();
         return base.SaveChangesAsync(cancellationToken);
     }
 
-    private void addAuditInformaiton()
+    private void AddAuditInformaiton()
     {
-        var AuditableEntries = ChangeTracker.Entries<AuditableEntity>();
+        var AuditableEntries = ChangeTracker
+            .Entries<AuditableEntity>()
+            .Where(e=>e.State== EntityState.Added || e.State == EntityState.Modified);
 
         string? userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -37,9 +35,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             if (entry.State == EntityState.Added)
             {
                 entry.Property(e => e.CreatedById).CurrentValue = userId!;
+                entry.Property(e => e.CreatedOn).CurrentValue = DateTime.UtcNow;
+
             }
             else if (entry.State == EntityState.Modified)
             {
+                entry.Property(e => e.CreatedOn).IsModified = false;
+                entry.Property(e => e.CreatedById).IsModified = false;
+
                 entry.Property(e => e.UpdatedOn).CurrentValue = DateTime.UtcNow;
                 entry.Property(e => e.UpdatedById).CurrentValue = userId;
             }

@@ -14,3 +14,7 @@ global using Microsoft.AspNetCore.Identity;
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Claims;
 global using Microsoft.Extensions.Options;
+global using SurveyBasket.Api.Abstractions;
+global using SurveyBasket.Api.Authentication;
+global using SurveyBasket.Api.Errors;
+
