@@ -35,20 +35,29 @@ public class PollService(ApplicationDbContext context) : IPollService
 
     public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
+        bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title, cancellationToken);
+        if (IsExistTitle)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatedTitle);
+
         Poll poll = request.Adapt<Poll>();
 
         await _context.AddAsync(poll, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return await GetAsync(poll.Id, cancellationToken);
+        return Result.Success(poll.Adapt<PollResponse>());
     }
 
     public async Task<Result<PollResponse>> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken = default)
     {
-
         Poll? currentPoll = await _context.Polls.FindAsync(id);
         if (currentPoll is null)
             return Result.Failure<PollResponse>(Errors<Poll>.NotFound);
+
+
+        bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id);
+        if (IsExistTitle)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatedTitle);
+
 
         request.Adapt(destination: currentPoll);
 
@@ -79,7 +88,7 @@ public class PollService(ApplicationDbContext context) : IPollService
 
         currentPoll.IsPublished = !currentPoll.IsPublished;
         await _context.SaveChangesAsync(cancellationToken);
-        
+
         return Result.Success(currentPoll.Adapt<PollResponse>());
     }
 

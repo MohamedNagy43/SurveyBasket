@@ -32,6 +32,9 @@ public static class DependencyInjection
                    .WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>()!)
          ));
 
+        // Exception Handler
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
 
         // Private Extension Methods
         services
