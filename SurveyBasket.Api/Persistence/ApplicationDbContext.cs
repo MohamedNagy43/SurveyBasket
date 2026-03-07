@@ -11,10 +11,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Change all cascade to Restrict
+        var CascadeForignKeys = modelBuilder.Model.GetEntityTypes()
+             .SelectMany(t => t.GetForeignKeys())
+             .Where(fk => fk.DeleteBehavior == DeleteBehavior.Cascade && !fk.IsOwnership);
+
+        foreach (var foreignKey in CascadeForignKeys)
+            foreignKey.DeleteBehavior = DeleteBehavior.Restrict;
+
+
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }
     public DbSet<Poll> Polls { get; set; }
+    public DbSet<Question> Questions { get; set; }
+    public DbSet<Answer> Answers { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -26,7 +37,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         var AuditableEntries = ChangeTracker
             .Entries<AuditableEntity>()
-            .Where(e=>e.State== EntityState.Added || e.State == EntityState.Modified);
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         string? userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
