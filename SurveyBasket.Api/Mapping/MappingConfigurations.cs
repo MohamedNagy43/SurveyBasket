@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Api.Mapping;
+﻿using SurveyBasket.Api.Contracts.Questions;
+
+namespace SurveyBasket.Api.Mapping;
 
 public class MappingConfigurations : IRegister
 {
@@ -11,7 +13,13 @@ public class MappingConfigurations : IRegister
            .Map(dest => dest.Summary, src => src.Summary)
            .Map(dest => dest.StartsAt, src => src.StartsAt)
            .Map(dest => dest.EndsAt, src => src.EndsAt)
-           .IgnoreNonMapped(true)
-           .IgnoreNullValues(true);
+           .IgnoreNonMapped(true);
+
+        // Question
+        config.NewConfig<QuestionRequest, Question>()
+            .Map(dest => dest.Answers, src => src.Answers.Select(answer => new Answer { Content = answer }));
+
+        config.NewConfig<Question, QuestionResponse>()
+            .Map(dest => dest.Answers, src => src.Answers.Where(x => x.IsActive));
     }
 }

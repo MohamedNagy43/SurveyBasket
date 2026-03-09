@@ -1,3 +1,9 @@
-﻿namespace SurveyBasket.Api.Contracts.Questions;
+﻿using SurveyBasket.Api.Contracts.Answers;
 
-public record QuestionResponse();
+namespace SurveyBasket.Api.Contracts.Questions;
+
+public record QuestionResponse(
+     int Id,
+     string Content,
+     IEnumerable<AnswersResponse> Answers
+ );
