@@ -17,5 +17,9 @@ global using SurveyBasket.Api.Abstractions;
 global using SurveyBasket.Api.Authentication;
 global using SurveyBasket.Api.Errors;
 global using SurveyBasket.Api.Contracts.Questions;
+global using Microsoft.AspNetCore.Authorization;
+global using SurveyBasket.Api.Contracts.Results;
+global using SurveyBasket.Api.Contracts.Votes;
+
 
 
