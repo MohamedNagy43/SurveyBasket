@@ -4,9 +4,10 @@ namespace SurveyBasket.Api.Services;
 
 public interface IQuestionService
 {
-    Task<Result<QuestionResponse>> AddAsync(int pollId, QuestionRequest request, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<QuestionResponse>>> GetAllAsync(int pollId, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId,string userId ,CancellationToken cancellationToken = default);
     Task<Result<QuestionResponse>> GetAsync(int pollId, int id, CancellationToken cancellationToken = default);
+    Task<Result<QuestionResponse>> AddAsync(int pollId, QuestionRequest request, CancellationToken cancellationToken = default);
     Task<Result<QuestionResponse>> UpdateAsync(int pollId, int id, QuestionRequest request, CancellationToken cancellationToken = default);
     Task<Result<QuestionResponse>> ToggleStatusAsync(int pollId, int id, CancellationToken cancellationToken = default);
 

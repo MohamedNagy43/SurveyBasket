@@ -1,5 +1,6 @@
 ﻿
 
+using SurveyBasket.Api.Extension;
 using SurveyBasket.Api.Persistence.Migrations;
 
 namespace SurveyBasket.Api.Persistence;
@@ -26,6 +27,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Poll> Polls { get; set; }
     public DbSet<Question> Questions { get; set; }
     public DbSet<Answer> Answers { get; set; }
+    public DbSet<Vote> Votes { get; set; }
+    public DbSet<VoteAnswer> VoteAnswers { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -39,7 +42,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .Entries<AuditableEntity>()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
-        string? userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        string? userId = _httpContextAccessor.HttpContext?.User.GetUserId();
 
         foreach (var entry in AuditableEntries)
         {
