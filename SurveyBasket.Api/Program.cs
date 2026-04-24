@@ -1,11 +1,12 @@
+using Serilog;
 using SurveyBasket.Api;
-using SurveyBasket.Api.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
 builder.Services.AddDependencies(builder.Configuration);
+
+builder.Host.UseSerilog((context,loggerConfiguration)
+    => loggerConfiguration.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
@@ -16,6 +17,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseExceptionHandler();
 
