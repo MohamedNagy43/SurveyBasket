@@ -1,13 +1,8 @@
 ﻿using FluentValidation;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
-using SurveyBasket.Api.Authentication;
-using SurveyBasket.Api.Persistence;
-using System.Reflection;
 using System.Text;
 
 namespace SurveyBasket.Api;
@@ -22,6 +17,8 @@ public static class DependencyInjection
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
+        //Cache
+        services.AddHybridCache();
 
         //CORS
         services.AddCors(option =>
