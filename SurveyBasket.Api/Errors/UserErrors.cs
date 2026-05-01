@@ -6,6 +6,21 @@ public static class UserErrors
     public static Error InvalidCredentials => new Error("User.InvalidCredentials"
         , "Invalid Email Or Password", StatusCodes.Status401Unauthorized);
 
+    public static Error InvalidEmailConfirmationCode => new Error("User.InvalidEmailConfirmationCode"
+        , "Invalid Email Confirmation Code", StatusCodes.Status401Unauthorized);
+
+    public static Error EmailAlreadyConfirmed => new Error("User.EmailAlreadyConfirmed"
+        , "Email Is Aleady confirmed for this user", StatusCodes.Status400BadRequest);
+
     public static Error InvalidTokens => new Error("User.InvalidTokens"
         , "Invalid Tokens", StatusCodes.Status400BadRequest);
+
+    public static Error DublicatedEmail => new Error("User.DublicatedEmail"
+        , "Email already has been taken", StatusCodes.Status409Conflict);
+
+    public static Error UserLockedOut => new Error("User.LockedOut"
+        , "You have enterd a wrong password so many times please try again later", StatusCodes.Status400BadRequest);
+
+    public static Error EmailNotConfirmed => new Error("User.EmailNotConfirmed"
+        , "Email Has not been confirmed", StatusCodes.Status401Unauthorized);
 }

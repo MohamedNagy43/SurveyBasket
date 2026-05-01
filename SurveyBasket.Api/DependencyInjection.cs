@@ -1,8 +1,10 @@
 ﻿using FluentValidation;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using SurveyBasket.Api.Settings;
 using System.Text;
 
 namespace SurveyBasket.Api;
@@ -36,6 +38,7 @@ public static class DependencyInjection
         // Private Extension Methods
         services
             .AddDataBaseConfig(configuration)
+            .AddEmailConfig(configuration)
             .AddMapsterConfig()
             .AddAuthenticationConfig(configuration)
             .AddFluntValidationConfig();
@@ -46,6 +49,17 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
+
+        return services;
+    }
+    private static IServiceCollection AddEmailConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<MailSettings>()
+            .BindConfiguration(MailSettings.SectionName)
+            .ValidateOnStart()
+            .ValidateDataAnnotations();
+
+        services.AddScoped<IEmailSender, EmailService>();
 
         return services;
     }
@@ -85,7 +99,8 @@ public static class DependencyInjection
 
         // Identity Services
         services.AddIdentity<ApplicationUser, IdentityRole>()
-           .AddEntityFrameworkStores<ApplicationDbContext>();
+           .AddEntityFrameworkStores<ApplicationDbContext>()
+           .AddDefaultTokenProviders();
 
         // Add Authentication
         var JwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
@@ -110,6 +125,15 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSettings?.SecretKey!))
             };
 
+        });
+
+
+        // Configure Identity Options
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.User.RequireUniqueEmail = true;
+            options.Password.RequiredLength = 8;
+            options.SignIn.RequireConfirmedEmail = true;
         });
 
         return services;

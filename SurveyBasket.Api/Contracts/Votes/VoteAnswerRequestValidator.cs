@@ -1,9 +1,8 @@
 ﻿// Ignore Spelling: Validator
 
 using FluentValidation;
-using SurveyBasket.Api.Contracts.Votes;
 
-namespace SurveyBasket.Api.Contracts.Polls;
+namespace SurveyBasket.Api.Contracts.Votes;
 
 public class VoteAnswerRequestValidator : AbstractValidator<VoteAnswerRequest>
 {

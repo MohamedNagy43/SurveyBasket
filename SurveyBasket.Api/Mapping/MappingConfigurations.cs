@@ -21,5 +21,10 @@ public class MappingConfigurations : IRegister
 
         config.NewConfig<Question, QuestionResponse>()
             .Map(dest => dest.Answers, src => src.Answers.Where(x => x.IsActive));
+
+        // Application User
+        config.NewConfig<RegisterRequest, ApplicationUser>()
+            .Map(dest => dest.UserName, src => src.Email.Substring(0,src.Email.IndexOf('@')))
+            ;
     }
 }
