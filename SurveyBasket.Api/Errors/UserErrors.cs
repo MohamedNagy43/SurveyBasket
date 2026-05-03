@@ -9,6 +9,9 @@ public static class UserErrors
     public static Error InvalidEmailConfirmationCode => new Error("User.InvalidEmailConfirmationCode"
         , "Invalid Email Confirmation Code", StatusCodes.Status401Unauthorized);
 
+    public static Error InvalidForgetPasswordCode => new Error("User.InvalidForgetPasswordCode"
+        , "Invalid Forget PasswordCode Code", StatusCodes.Status401Unauthorized);
+
     public static Error EmailAlreadyConfirmed => new Error("User.EmailAlreadyConfirmed"
         , "Email Is Aleady confirmed for this user", StatusCodes.Status400BadRequest);
 

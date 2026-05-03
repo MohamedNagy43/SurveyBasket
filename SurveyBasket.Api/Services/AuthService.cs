@@ -120,6 +120,48 @@ public class AuthService(
 
         return Result.Success();
     }
+    public async Task<Result> SendResetPasswordCodeAsync(string email)
+    {
+        if (await _userManager.FindByEmailAsync(email) is not { } user)
+            return Result.Success();
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        _logger.LogInformation("reset password Code : {code}", code);
+
+        // build email and sent
+        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+        var body = await EmailBodyBuilder.BuildEmailBodyAsync("ForgetPassword", new Dictionary<string, string>
+        {
+            {"{{name}}",user.FirstName},
+            {"{{action_url}}",$"{origin}/auth/reset-password?email={user.Email}&code={code}"} // frontEnd Diriction
+        });
+
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(email, "SurveyBasket: reset your email", body));
+        return Result.Success();
+    }
+    public async Task<Result> ResetPasswordCodeAsync(ResetPasswordRequest request)
+    {
+        if (await _userManager.FindByEmailAsync(request.Email) is not { } user)
+            return Result.Failure(UserErrors.InvalidForgetPasswordCode);
+
+        string token;
+        try
+        {
+            token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+        }
+        catch
+        {
+            return Result.Failure(UserErrors.InvalidForgetPasswordCode);
+        }
+        var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
+
+        if (result.Succeeded)
+            return Result.Success();
+        else
+            return Result.Failure(UserErrors.InvalidForgetPasswordCode);
+    }
     public async Task<OneOf<AuthResponse, Error>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
     {
         // Access Token Validation

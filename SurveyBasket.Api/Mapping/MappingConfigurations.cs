@@ -13,7 +13,7 @@ public class MappingConfigurations : IRegister
            .Map(dest => dest.Summary, src => src.Summary)
            .Map(dest => dest.StartsAt, src => src.StartsAt)
            .Map(dest => dest.EndsAt, src => src.EndsAt)
-           .IgnoreNonMapped(true);
+           .IgnoreNonMapped(true);  // no need mapster is smart
 
         // Question
         config.NewConfig<QuestionRequest, Question>()
@@ -24,7 +24,6 @@ public class MappingConfigurations : IRegister
 
         // Application User
         config.NewConfig<RegisterRequest, ApplicationUser>()
-            .Map(dest => dest.UserName, src => src.Email.Substring(0,src.Email.IndexOf('@')))
-            ;
+            .Map(dest => dest.UserName, src => src.Email.Substring(0,src.Email.IndexOf('@')));
     }
 }

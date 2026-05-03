@@ -52,6 +52,8 @@ public static class DependencyInjection
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IUserService, UserService>();
+
 
 
         return services;
