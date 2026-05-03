@@ -1,11 +1,14 @@
 ﻿
+using Hangfire;
+using Microsoft.VisualBasic;
 using System.Linq.Expressions;
 
 namespace SurveyBasket.Api.Services;
 
-public class PollService(ApplicationDbContext context) : IPollService
+public class PollService(ApplicationDbContext context,INotificationService notificationService) : IPollService
 {
     private readonly ApplicationDbContext _context = context;
+    private readonly INotificationService _notificationService = notificationService;
 
     public async Task<Result<IEnumerable<PollResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -95,12 +98,15 @@ public class PollService(ApplicationDbContext context) : IPollService
 
     public async Task<Result<PollResponse>> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
     {
-        Poll? currentPoll = await _context.Polls.FindAsync(id);
+        Poll? currentPoll = await _context.Polls.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (currentPoll is null)
             return Result.Failure<PollResponse>(Errors<Poll>.NotFound);
 
         currentPoll.IsPublished = !currentPoll.IsPublished;
         await _context.SaveChangesAsync(cancellationToken);
+
+        if (currentPoll.IsPublished && currentPoll.StartsAt == DateOnly.FromDateTime(DateAndTime.Now))
+            BackgroundJob.Enqueue(() => _notificationService.SendNewPollNotificationAsync(currentPoll.Id));
 
         return Result.Success(currentPoll.Adapt<PollResponse>());
     }

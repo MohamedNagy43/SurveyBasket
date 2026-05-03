@@ -4,7 +4,7 @@ namespace SurveyBasket.Api.Helpers;
 
 public static class EmailBodyBuilder
 {
-    public static async Task<string> BuildEmailBody(string templateName, Dictionary<string, string> templateModels)
+    public static async Task<string> BuildEmailBodyAsync(string templateName, Dictionary<string, string> templateModels)
     {
         string fullPath = $"{Directory.GetCurrentDirectory()}/Templates/{templateName}.html";
         string template = await File.ReadAllTextAsync(fullPath);

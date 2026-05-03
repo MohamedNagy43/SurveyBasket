@@ -28,11 +28,12 @@ public class EmailService(IOptions<MailSettings> mailSettings,ILogger<EmailServi
 
         message.Body = bodyBuilder.ToMessageBody();
 
+        _logger.LogInformation("sending email to {email}", email);
+
         // Connection >> Smpt here from MailKit package
         using var smtpClient = new SmtpClient();
         await smtpClient.ConnectAsync(_mailSettings.Host,_mailSettings.Port,SecureSocketOptions.StartTls);
         await smtpClient.AuthenticateAsync(_mailSettings.Mail, _mailSettings.Password);
-        _logger.LogInformation("sending email to {email}", email);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
     }

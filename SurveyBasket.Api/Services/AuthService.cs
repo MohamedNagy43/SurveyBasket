@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using OneOf;
 using SurveyBasket.Api.Helpers;
@@ -182,16 +183,17 @@ public class AuthService(
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
-    private async Task SendConfirmationEmailAsync(ApplicationUser user,string code)
+    private async Task SendConfirmationEmailAsync(ApplicationUser user, string code)
     {
         // Email Sender
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
-        string emailBody = await EmailBodyBuilder.BuildEmailBody("ConfirmationEmail", new Dictionary<string, string>
+        string emailBody = await EmailBodyBuilder.BuildEmailBodyAsync("ConfirmationEmail", new Dictionary<string, string>
         {
             {"{{name}}",user.FirstName},
             {"{{action_url}}",$"{origin}/auth/ConfirmationEmail?userId={user.Id}&code={code}"} // frontEnd Diriction
         });
-        await _emailSender.SendEmailAsync(user.Email!, "Confirm email at survey basket", emailBody);
+
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Confirm email at survey basket", emailBody));
     }
 
 }
