@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using OneOf;
+using SurveyBasket.Api.Abstractions.Consts;
 using SurveyBasket.Api.Helpers;
 using System.Security.Cryptography;
 using System.Text;
@@ -10,6 +11,8 @@ namespace SurveyBasket.Api.Services;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
+    RoleManager<ApplicationRole> roleManager,
+    ApplicationDbContext context,
     IJwtProvider jwtProvider,
     ILogger<AuthService> logger,
     SignInManager<ApplicationUser> signInManager,
@@ -18,6 +21,8 @@ public class AuthService(
 ) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
+    private readonly ApplicationDbContext _context = context;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly ILogger<AuthService> _logger = logger;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
@@ -41,9 +46,11 @@ public class AuthService(
             return Result.Failure<AuthResponse>(UserErrors.EmailNotConfirmed);
 
         if (!result.Succeeded)
-            return Result.Failure<AuthResponse>(new Error("SignInFaild", "Something went wrong", 500));
+            return Result.Failure<AuthResponse>(new Error("SignInFaild", "User Name or Password is not correct", 401));
 
-        var (accesstoken, expiresIn) = await _jwtProvider.GenerateTokenAsync(user);
+
+        var (roles, permissions) = await GetUserRolesAndPermissions(user, cancellationToken);
+        var (accesstoken, expiresIn) = await _jwtProvider.GenerateTokenAsync(user, roles, permissions);
 
         var newRefreshToken = new RefreshToken(_refreshTokenExpirationDays);
         user.RefreshTokens.Add(newRefreshToken);
@@ -118,6 +125,8 @@ public class AuthService(
         if (!result.Succeeded)
             return Result.Failure(UserErrors.InvalidEmailConfirmationCode);
 
+        await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
+
         return Result.Success();
     }
     public async Task<Result> SendResetPasswordCodeAsync(string email)
@@ -185,7 +194,9 @@ public class AuthService(
 
         // Generate New Access Token and Refresh Token
 
-        var (accesstoken, expiresIn) = await _jwtProvider.GenerateTokenAsync(user);
+        var (roles, permissions) = await GetUserRolesAndPermissions(user, cancellationToken);
+        var (accesstoken, expiresIn) = await _jwtProvider.GenerateTokenAsync(user, roles, permissions);
+
         var newRefreshToken = new RefreshToken
         {
             Token = GenerateRefreshToken(),
@@ -236,6 +247,22 @@ public class AuthService(
         });
 
         BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Confirm email at survey basket", emailBody));
+    }
+    private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRolesAndPermissions(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        var permissions = await (
+
+            from role in _context.Roles
+            join claim in _context.RoleClaims
+            on role.Id equals claim.RoleId
+            where userRoles.Contains(role.Name!) && claim.ClaimType == Permissions.Type
+            select claim.ClaimValue
+
+        ).Distinct().ToListAsync(cancellationToken);
+
+        return (userRoles, permissions);
     }
 
 }

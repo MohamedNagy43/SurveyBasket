@@ -3,15 +3,14 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json;
 
 namespace SurveyBasket.Api.Authentication;
 
-public class JwtProvider(IOptions<JwtOptions> jwtOption, UserManager<ApplicationUser> userManager) : IJwtProvider
+public class JwtProvider(IOptions<JwtOptions> jwtOption) : IJwtProvider
 {
     private readonly JwtOptions _jwtOption = jwtOption.Value;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-
-    public async Task<(string token, int ExpiresIn)> GenerateTokenAsync(ApplicationUser user)
+    public async Task<(string token, int ExpiresIn)> GenerateTokenAsync(ApplicationUser user,IEnumerable<string> roles, IEnumerable<string> permissions)
     {
         // Claims
         List<Claim> claims =
@@ -20,9 +19,11 @@ public class JwtProvider(IOptions<JwtOptions> jwtOption, UserManager<Application
                new Claim(ClaimTypes.NameIdentifier,user.Id),
                new Claim(ClaimTypes.Name,user.UserName!),
                new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+               new Claim(nameof(roles),JsonSerializer.Serialize(roles),JsonClaimValueTypes.JsonArray),
+               new Claim(nameof(permissions),JsonSerializer.Serialize(permissions),JsonClaimValueTypes.JsonArray)
         ];
-        var userRoles = await _userManager.GetRolesAsync(user);
-        claims.AddRange(userRoles.Select(r => new Claim(ClaimTypes.Role, r)));
+        //claims.AddRange(roles.Select(r => new Claim(nameof(roles), r)));
+        //claims.AddRange(permissions.Select(p => new Claim(nameof(permissions), p)));
 
         // signingCredentials
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.SecretKey));

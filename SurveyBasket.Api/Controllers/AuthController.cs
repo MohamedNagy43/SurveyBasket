@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Api.Controllers;
+﻿using SurveyBasket.Api.Abstractions.Consts;
+
+namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -36,14 +38,14 @@ public class AuthController(IAuthService authService) : ControllerBase
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPost("forget-password")]
-    public async Task<IActionResult> SendResetPasswordCodeAsync(ForgetPasswordRequest request)
+    public async Task<IActionResult> SendResetPasswordCode(ForgetPasswordRequest request)
     {
         var result = await _authService.SendResetPasswordCodeAsync(request.Email);
 
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPasswordAsync(ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
     {
         var result = await _authService.ResetPasswordCodeAsync(request);
 

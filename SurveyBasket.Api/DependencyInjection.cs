@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using SurveyBasket.Api.Authentication.Filters;
 using SurveyBasket.Api.Settings;
 using System.Text;
 
@@ -97,6 +98,10 @@ public static class DependencyInjection
         // token provider
         services.AddScoped<IJwtProvider, JwtProvider>();
 
+        // Permission Based Authorization
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
         // Jwt Option
         //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddOptions<JwtOptions>()
@@ -104,7 +109,7 @@ public static class DependencyInjection
             .ValidateDataAnnotations().ValidateOnStart();
 
         // Identity Services
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        services.AddIdentity<ApplicationUser, ApplicationRole>()
            .AddEntityFrameworkStores<ApplicationDbContext>()
            .AddDefaultTokenProviders();
 

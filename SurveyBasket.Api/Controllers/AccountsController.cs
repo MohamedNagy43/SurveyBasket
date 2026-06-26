@@ -19,7 +19,7 @@ public class AccountsController(IUserService userService) : ControllerBase
         return Ok(result.Value);
     }
     [HttpPut("info")]
-    public async Task<IActionResult> GetProfileInfo(UpdateProfileRequest request)
+    public async Task<IActionResult> UpdateProfileInfo(UpdateProfileRequest request)
     {
         await _userService.UpdateProfileInfoAsync(User.GetUserId()!, request);
         return NoContent();
