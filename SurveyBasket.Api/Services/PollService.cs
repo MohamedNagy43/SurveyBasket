@@ -65,12 +65,12 @@ public class PollService(ApplicationDbContext context,INotificationService notif
 
     public async Task<Result<PollResponse>> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken = default)
     {
-        Poll? currentPoll = await _context.Polls.FindAsync(id);
+        Poll? currentPoll = await _context.Polls.FindAsync(id,cancellationToken);
         if (currentPoll is null)
             return Result.Failure<PollResponse>(Errors<Poll>.NotFound);
 
 
-        bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id);
+        bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id,cancellationToken);
         if (IsExistTitle)
             return Result.Failure<PollResponse>(PollErrors.DuplicatedTitle);
 
