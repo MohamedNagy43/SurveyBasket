@@ -146,6 +146,7 @@ public static class DependencyInjection
             options.User.RequireUniqueEmail = true;
             options.Password.RequiredLength = 8;
             options.SignIn.RequireConfirmedEmail = true;
+
         });
 
         return services;

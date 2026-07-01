@@ -5,6 +5,10 @@ public static class UserErrors
 {
     public static Error InvalidCredentials => new Error("User.InvalidCredentials"
         , "Invalid Email Or Password", StatusCodes.Status401Unauthorized);
+    public static Error UserDisabled => new Error("User.DisabledAccount"
+        , "user account has been disabled,please contact the admin", StatusCodes.Status401Unauthorized);
+    public static Error UserAlreadyUnlocked => new Error("User.UserAlreadyUnlocked"
+        , "user account is unlocked and you can sign in", StatusCodes.Status401Unauthorized);
 
     public static Error InvalidEmailConfirmationCode => new Error("User.InvalidEmailConfirmationCode"
         , "Invalid Email Confirmation Code", StatusCodes.Status401Unauthorized);
@@ -22,7 +26,7 @@ public static class UserErrors
         , "Email already has been taken", StatusCodes.Status409Conflict);
 
     public static Error UserLockedOut => new Error("User.LockedOut"
-        , "You have enterd a wrong password so many times please try again later", StatusCodes.Status400BadRequest);
+        , "You have enterd a wrong password so many times please try again later", StatusCodes.Status401Unauthorized);
 
     public static Error EmailNotConfirmed => new Error("User.EmailNotConfirmed"
         , "Email Has not been confirmed", StatusCodes.Status401Unauthorized);

@@ -11,7 +11,6 @@ namespace SurveyBasket.Api.Services;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
-    RoleManager<ApplicationRole> roleManager,
     ApplicationDbContext context,
     IJwtProvider jwtProvider,
     ILogger<AuthService> logger,
@@ -21,7 +20,6 @@ public class AuthService(
 ) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
     private readonly ApplicationDbContext _context = context;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly ILogger<AuthService> _logger = logger;
@@ -37,6 +35,9 @@ public class AuthService(
         if (user is null)
             return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.UserDisabled);
+
         var result = await _signInManager.PasswordSignInAsync(user, password, false, true);
 
         if (result.IsLockedOut)
@@ -46,7 +47,7 @@ public class AuthService(
             return Result.Failure<AuthResponse>(UserErrors.EmailNotConfirmed);
 
         if (!result.Succeeded)
-            return Result.Failure<AuthResponse>(new Error("SignInFaild", "User Name or Password is not correct", 401));
+            return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
 
         var (roles, permissions) = await GetUserRolesAndPermissions(user, cancellationToken);
@@ -182,6 +183,11 @@ public class AuthService(
         if (user is null)
             return UserErrors.InvalidTokens;
 
+        if (user.IsDisabled)
+            return UserErrors.UserDisabled;
+
+        if (user.LockoutEnd is not null && user.LockoutEnd > DateTime.UtcNow)
+            return UserErrors.UserLockedOut;
 
         // Refresh Token Validation
         RefreshToken? existToken = user.RefreshTokens.SingleOrDefault(refresh => refresh.Token == refreshToken && refresh.IsActive);
