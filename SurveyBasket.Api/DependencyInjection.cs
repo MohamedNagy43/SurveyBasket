@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket.Api.Authentication.Filters;
+using SurveyBasket.Api.Health;
 using SurveyBasket.Api.Settings;
 using System.Text;
 
@@ -37,9 +38,12 @@ public static class DependencyInjection
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
+        string? connectionString = configuration.GetConnectionString("DefaultConnection") ??
+              throw new InvalidOperationException("Connection string not found of DefaultConnection");
+
         // Private Extension Methods
         services
-            .AddDataBaseConfig(configuration)
+            .AddDataBaseConfig(connectionString, configuration)
             .AddEmailConfig(configuration)
             .AddMapsterConfig()
             .AddBackgroundJobsConfig(configuration)
@@ -56,6 +60,10 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
 
+        services.AddHealthChecks()
+            .AddSqlServer(name: "database", connectionString: connectionString,tags: ["application database"])
+            .AddHangfire(option => { option.MinimumAvailableServers = 1; })
+            .AddCheck<MailProviderHealthCheck>(name: "mail service");
 
 
         return services;
@@ -71,11 +79,8 @@ public static class DependencyInjection
 
         return services;
     }
-    private static IServiceCollection AddDataBaseConfig(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddDataBaseConfig(this IServiceCollection services, string connectionString, IConfiguration configuration)
     {
-        string? connectionString = configuration.GetConnectionString("DefaultConnection") ??
-           throw new InvalidOperationException("Connection string not found of DefaultConnection");
-
         return services.AddDbContext<ApplicationDbContext>(option =>
         {
             option.UseSqlServer(connectionString);
