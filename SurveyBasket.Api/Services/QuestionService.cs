@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Hybrid;
-
+using SurveyBasket.Api.Contracts.Common;
+using System.Linq.Dynamic.Core;
 namespace SurveyBasket.Api.Services;
 
 public class QuestionService(ApplicationDbContext context, HybridCache hybridCache) : IQuestionService
@@ -8,21 +9,31 @@ public class QuestionService(ApplicationDbContext context, HybridCache hybridCac
     private readonly HybridCache _hybridCache = hybridCache;
     private readonly string _CachePrefix = "availableQuestions";
 
-    public async Task<Result<IEnumerable<QuestionResponse>>> GetAllAsync(int pollId, CancellationToken cancellationToken = default)
+    public async Task<Result<PaginatedList<QuestionResponse>>> GetAllAsync(int pollId, RequestFilters filters, CancellationToken cancellationToken = default)
     {
         bool isPollExist = await _context.Polls.AnyAsync(p => p.Id == pollId, cancellationToken);
 
         if (!isPollExist)
-            return Result.Failure<IEnumerable<QuestionResponse>>(Errors<Poll>.NotFound);
+            return Result.Failure<PaginatedList<QuestionResponse>>(Errors<Poll>.NotFound);
 
-        var response =
-            await _context.Questions.Where(q => q.PollId == pollId)
-            .Include(q => q.Answers)
-            .ProjectToType<QuestionResponse>()
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        var query =
+             _context.Questions
+            .Where(q => q.PollId == pollId && (string.IsNullOrEmpty(filters.SearchValue) || q.Content.Contains(filters.SearchValue)))
+            .AsNoTracking();
 
-        return Result.Success(response.AsEnumerable());
+        if (!string.IsNullOrEmpty(filters.SortColumn))
+        {
+            List<string> allowedColumns = ["Content", "Id"];
+
+            if (allowedColumns.Any(x => x.Equals(filters.SortColumn, StringComparison.OrdinalIgnoreCase)))
+                query = query.OrderBy($"{filters.SortColumn} {filters.SortDirction}");
+        }
+
+        var projectedQuery = query.ProjectToType<QuestionResponse>();
+
+        var response = await PaginatedList<QuestionResponse>.CreateAsync(projectedQuery, filters.PageNumber, filters.PageSize, cancellationToken);
+
+        return Result.Success(response);
     }
     public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
     {
