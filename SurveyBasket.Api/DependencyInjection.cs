@@ -3,12 +3,15 @@ using Hangfire;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket.Api.Authentication.Filters;
+using SurveyBasket.Api.Extension;
 using SurveyBasket.Api.Health;
 using SurveyBasket.Api.Settings;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace SurveyBasket.Api;
 
@@ -46,6 +49,7 @@ public static class DependencyInjection
             .AddDataBaseConfig(connectionString, configuration)
             .AddEmailConfig(configuration)
             .AddMapsterConfig()
+            .AddRateLimitingConfig()
             .AddBackgroundJobsConfig(configuration)
             .AddAuthenticationConfig(configuration)
             .AddFluntValidationConfig();
@@ -61,9 +65,10 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
 
         services.AddHealthChecks()
-            .AddSqlServer(name: "database", connectionString: connectionString,tags: ["application database"])
+            .AddSqlServer(name: "database", connectionString: connectionString, tags: ["application database"])
             .AddHangfire(option => { option.MinimumAvailableServers = 1; })
             .AddCheck<MailProviderHealthCheck>(name: "mail service");
+
 
 
         return services;
@@ -98,6 +103,45 @@ public static class DependencyInjection
         return services
             .AddFluentValidationAutoValidation()
             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+    }
+    private static IServiceCollection AddRateLimitingConfig(this IServiceCollection services)
+    {
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+
+            rateLimiterOptions.AddPolicy(RateLimitingPolicies.IpLimit, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+            rateLimiterOptions.AddPolicy(RateLimitingPolicies.UserLimit, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.GetUserId(),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+                )
+            );
+
+            rateLimiterOptions.AddConcurrencyLimiter(RateLimitingPolicies.ConcurrencyLimit, options =>
+            {
+                options.PermitLimit = 10;
+                options.QueueLimit = 5;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+        });
+
+        return services;
     }
     private static IServiceCollection AddAuthenticationConfig(this IServiceCollection services, IConfiguration configuration)
     {

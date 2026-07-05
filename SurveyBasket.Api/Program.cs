@@ -53,6 +53,8 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseRateLimiter();
+
 app.MapControllers();
 
 app.MapHealthChecks("health", new HealthCheckOptions
