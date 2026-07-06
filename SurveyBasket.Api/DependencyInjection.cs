@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Asp.Versioning;
+using FluentValidation;
 using Hangfire;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,6 +51,8 @@ public static class DependencyInjection
             .AddEmailConfig(configuration)
             .AddMapsterConfig()
             .AddRateLimitingConfig()
+            .AddApiVersioningConfig()
+            .AddHealthCheckConfig(connectionString)
             .AddBackgroundJobsConfig(configuration)
             .AddAuthenticationConfig(configuration)
             .AddFluntValidationConfig();
@@ -63,13 +66,6 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
-
-        services.AddHealthChecks()
-            .AddSqlServer(name: "database", connectionString: connectionString, tags: ["application database"])
-            .AddHangfire(option => { option.MinimumAvailableServers = 1; })
-            .AddCheck<MailProviderHealthCheck>(name: "mail service");
-
-
 
         return services;
     }
@@ -140,6 +136,32 @@ public static class DependencyInjection
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             });
         });
+
+        return services;
+    }
+    private static IServiceCollection AddApiVersioningConfig(this IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+
+            options.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'V";
+            options.SubstituteApiVersionInUrl = true;
+        });
+
+        return services;
+    }
+    private static IServiceCollection AddHealthCheckConfig(this IServiceCollection services, string connectionString)
+    {
+        services.AddHealthChecks()
+            .AddSqlServer(name: "database", connectionString: connectionString, tags: ["application database"])
+            .AddHangfire(option => { option.MinimumAvailableServers = 1; })
+            .AddCheck<MailProviderHealthCheck>(name: "mail service");
 
         return services;
     }
