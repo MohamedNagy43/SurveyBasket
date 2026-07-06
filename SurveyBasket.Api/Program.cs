@@ -17,14 +17,19 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "v1");
+        options.InjectStylesheet("/swagger-dark.css");
+    });
     app.MapScalarApiReference();
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
 app.UseSerilogRequestLogging();
 
 app.UseExceptionHandler();
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

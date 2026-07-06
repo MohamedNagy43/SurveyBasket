@@ -23,8 +23,6 @@ public static class DependencyInjection
         services.AddControllers();
 
         services.AddOpenApi();
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
 
         //Cache
         services.AddHybridCache();
