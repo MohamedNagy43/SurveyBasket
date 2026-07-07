@@ -19,8 +19,7 @@ public class MappingConfigurations : IRegister
             .Map(dest => dest.UserName, src => src.Email.Substring(0, src.Email.IndexOf('@')));
 
         config.NewConfig<CreateUserRequest, ApplicationUser>()
-            .Map(dest => dest.UserName, src => src.Email.Substring(0, src.Email.IndexOf('@')))
-            .Map(dest => dest.EmailConfirmed, src => true);
+            .Map(dest => dest.UserName, src => src.Email.Substring(0, src.Email.IndexOf('@')));
 
         config.NewConfig<UpdateUserRequest, ApplicationUser>()
             .Map(dest => dest.UserName, src => src.Email.Substring(0, src.Email.IndexOf('@')))

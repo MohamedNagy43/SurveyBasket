@@ -90,6 +90,9 @@ public class AuthService(
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.EmailAlreadyConfirmed);
 
+        if (user.PasswordHash is null)
+            return Result.Failure(Errors<ApplicationUser>.NotAllowed);
+
         string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         string code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
@@ -106,6 +109,9 @@ public class AuthService(
 
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.EmailAlreadyConfirmed);
+
+        if (user.PasswordHash is null)
+            return Result.Failure(Errors<ApplicationUser>.NotAllowed);
 
         string token;
         try

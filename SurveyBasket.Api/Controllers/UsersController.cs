@@ -31,6 +31,14 @@ public class UsersController(IUserService userService) : ControllerBase
         return result.IsSuccess ? CreatedAtAction(nameof(Get), new { result.Value.Id }, result.Value) : result.ToProblem();
     }
 
+    [HttpPost("confirm-email-and-set-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmEmailWithSetPassword(ConfirmEmailAndSetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _userService.ConfirmEmailAndSetPasswordAsync(request);
+        return result.IsSuccess ? Ok("Welcome, Email now confirmed and password has been set") : result.ToProblem();
+    }
+
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateUsers)]
     public async Task<IActionResult> Update(string id, UpdateUserRequest request, CancellationToken cancellationToken)

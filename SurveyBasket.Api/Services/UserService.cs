@@ -1,11 +1,22 @@
-﻿using SurveyBasket.Api.Contracts.Users;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.WebUtilities;
+using SurveyBasket.Api.Contracts.Users;
+using SurveyBasket.Api.Helpers;
+using System.Text;
 
 namespace SurveyBasket.Api.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, ApplicationDbContext context, IRoleService roleService) : IUserService
+public class UserService(UserManager<ApplicationUser> userManager,
+    ApplicationDbContext context,
+    IHttpContextAccessor httpContextAccessor,
+    IEmailSender emailSender,
+    IRoleService roleService) : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly ApplicationDbContext _context = context;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly IEmailSender _emailSender = emailSender;
     private readonly IRoleService _roleService = roleService;
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -58,7 +69,7 @@ public class UserService(UserManager<ApplicationUser> userManager, ApplicationDb
         // Add
         var newUser = request.Adapt<ApplicationUser>();
 
-        var result = await _userManager.CreateAsync(newUser, request.Password);
+        var result = await _userManager.CreateAsync(newUser);
 
         if (!result.Succeeded)
         {
@@ -67,7 +78,47 @@ public class UserService(UserManager<ApplicationUser> userManager, ApplicationDb
         }
         await _userManager.AddToRolesAsync(newUser, request.Roles);
 
+        // send confirmation email
+        string token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+        string code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+        await SendConfirmationEmailAsync(newUser, request.Roles[0], code);
+
         return Result.Success(new UserResponse(newUser.Id, newUser.FirstName, newUser.LastName, newUser.Email!, newUser.IsDisabled, request.Roles));
+    }
+    public async Task<Result> ConfirmEmailAndSetPasswordAsync(ConfirmEmailAndSetPasswordRequest request)
+    {
+        if (await _userManager.FindByIdAsync(request.UserId) is not { } user)
+            return Result.Failure(UserErrors.InvalidEmailConfirmationCode);
+
+        if (user.EmailConfirmed)
+            return Result.Failure(UserErrors.EmailAlreadyConfirmed);
+
+        string token;
+        try
+        {
+            token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+        }
+        catch
+        {
+            return Result.Failure(UserErrors.InvalidEmailConfirmationCode);
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        if (!result.Succeeded)
+            return Result.Failure(UserErrors.InvalidEmailConfirmationCode);
+
+
+        result = await _userManager.AddPasswordAsync(user, request.Password);
+
+        if (!result.Succeeded)
+        {
+            var error = result.Errors.First();
+            return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+        }
+
+        return Result.Success();
     }
     public async Task<Result> UpdateAsync(string id, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -167,5 +218,21 @@ public class UserService(UserManager<ApplicationUser> userManager, ApplicationDb
 
         var error = result.Errors.First();
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    // private
+    private async Task SendConfirmationEmailAsync(ApplicationUser user, string firstRole, string code)
+    {
+        // Email Sender
+        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+        string emailBody = await EmailBodyBuilder.BuildEmailBodyAsync("ConfirmationEmailAndSetPassword", new Dictionary<string, string>
+        {
+            {"{{name}}",user.FirstName},
+            {"{{role}}", firstRole},
+            {"{{action_url}}",$"{origin}api/users/confirm-email-and-set-password?userId={user.Id}&code={code}"} 
+            // frontEnd Diriction will open box to enter password
+        });
+
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Join us at survey basket", emailBody));
     }
 }
