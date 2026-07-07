@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using FluentValidation;
 using Hangfire;
 using MapsterMapper;
@@ -6,11 +7,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket.Api.Authentication.Filters;
 using SurveyBasket.Api.Extension;
 using SurveyBasket.Api.Health;
 using SurveyBasket.Api.Settings;
+using SurveyBasket.OpenApiTransformers;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -22,7 +25,7 @@ public static class DependencyInjection
     {
         services.AddControllers();
 
-        services.AddOpenApi();
+        services.AddEndpointsApiExplorer();
 
         //Cache
         services.AddHybridCache();
@@ -50,6 +53,7 @@ public static class DependencyInjection
             .AddMapsterConfig()
             .AddRateLimitingConfig()
             .AddApiVersioningConfig()
+            .AddOpenApiConfig()
             .AddHealthCheckConfig(connectionString)
             .AddBackgroundJobsConfig(configuration)
             .AddAuthenticationConfig(configuration)
@@ -134,6 +138,22 @@ public static class DependencyInjection
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             });
         });
+
+        return services;
+    }
+    private static IServiceCollection AddOpenApiConfig(this IServiceCollection services)
+    {
+        var serviceProvider = services.BuildServiceProvider();
+        var apiVersionDescriptionProvider = serviceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+
+        foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+        {
+            services.AddOpenApi(description.GroupName, options =>
+            {
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+                options.AddDocumentTransformer(new ApiVersioningTransformer(description));
+            });
+        }
 
         return services;
     }
