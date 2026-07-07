@@ -1,6 +1,4 @@
-﻿using OneOf.Types;
-
-namespace SurveyBasket.Api.Abstractions;
+﻿namespace SurveyBasket.Api.Abstractions;
 
 public static class ResultExtensions
 {

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SurveyBasket.Api.Abstractions.Consts;
 
 namespace SurveyBasket.Api.Persistence.EntitiesConfigurations.IdentityConfigurations;
 
@@ -9,9 +8,8 @@ public class UserConfigurations : IEntityTypeConfiguration<ApplicationUser>
     {
         builder.Property(u => u.FirstName).HasMaxLength(100);
         builder.Property(u => u.LastName).HasMaxLength(100);
-        //builder.Property(u=>u.RefreshTokens).HasMaxLength(5);
 
-        // seed data
+        // Default data
         //var hasher = new PasswordHasher<ApplicationUser>();
         builder.HasData(new ApplicationUser
         {

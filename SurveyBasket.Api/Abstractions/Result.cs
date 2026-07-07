@@ -1,6 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-
-namespace SurveyBasket.Api.Abstractions;
+﻿namespace SurveyBasket.Api.Abstractions;
 
 public class Result
 {

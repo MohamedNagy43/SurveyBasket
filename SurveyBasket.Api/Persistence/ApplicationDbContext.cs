@@ -1,12 +1,11 @@
 ﻿
 
 using SurveyBasket.Api.Extension;
-using SurveyBasket.Api.Persistence.Migrations;
 
 namespace SurveyBasket.Api.Persistence;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor)
-    : IdentityDbContext<ApplicationUser,ApplicationRole,string>(options)
+    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 

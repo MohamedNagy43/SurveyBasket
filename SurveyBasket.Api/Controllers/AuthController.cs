@@ -1,6 +1,4 @@
-﻿using Asp.Versioning;
-using Microsoft.AspNetCore.RateLimiting;
-using SurveyBasket.Api.Abstractions.Consts;
+﻿using Microsoft.AspNetCore.RateLimiting;
 
 namespace SurveyBasket.Api.Controllers;
 
@@ -11,7 +9,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
 
-    [HttpPost("Login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
@@ -19,7 +17,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
-    [HttpPost("Register")]
+    [HttpPost("register")]
     [DisableRateLimiting]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
     {

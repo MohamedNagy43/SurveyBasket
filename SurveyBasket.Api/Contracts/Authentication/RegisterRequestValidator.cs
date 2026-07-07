@@ -1,6 +1,4 @@
 ﻿using FluentValidation;
-using SurveyBasket.Api.Abstractions.Consts;
-using System.Text.RegularExpressions;
 
 namespace SurveyBasket.Api.Contracts.Authentication;
 

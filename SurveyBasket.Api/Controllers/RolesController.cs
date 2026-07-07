@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using SurveyBasket.Api.Contracts.Roles;
+﻿using SurveyBasket.Api.Contracts.Roles;
 
 namespace SurveyBasket.Api.Controllers;
 

@@ -1,12 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SurveyBasket.Api.Settings;
+﻿namespace SurveyBasket.Api.Settings;
 
 public class MailSettings
 {
     public static readonly string SectionName = "MailSettings";
 
-    [Required,EmailAddress]
+    [Required, EmailAddress]
     public string Mail { get; set; } = string.Empty;
 
     [Required]
@@ -18,6 +16,6 @@ public class MailSettings
     [Required]
     public string DisplayName { get; set; } = string.Empty;
 
-    [Required]
+    [Required, Range(100, 999)]
     public int Port { get; set; }
 }

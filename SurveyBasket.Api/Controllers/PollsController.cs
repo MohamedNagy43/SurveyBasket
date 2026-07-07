@@ -78,7 +78,7 @@ public class PollsController(IPollService pollService) : ControllerBase
     }
 
 
-    [HttpPut("{id}/TogglePublish")]
+    [HttpPut("{id}/toggle-publish")]
     [HasPermission(Permissions.UpdatePolls)]
     public async Task<IActionResult> TogglePublish(int id, CancellationToken cancellationToken)
     {

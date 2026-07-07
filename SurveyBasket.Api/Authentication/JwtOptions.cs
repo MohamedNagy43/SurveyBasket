@@ -1,8 +1,4 @@
-﻿// Ignore Spelling: Jwt
-
-using System.ComponentModel.DataAnnotations;
-
-namespace SurveyBasket.Api.Authentication;
+﻿namespace SurveyBasket.Api.Authentication;
 
 public class JwtOptions
 {
@@ -18,6 +14,6 @@ public class JwtOptions
     [Required]
     public string Audience { get; init; } = string.Empty;
 
-    [Required,Range(1,int.MaxValue)]
+    [Required, Range(1, int.MaxValue)]
     public int ExpiryMinutes { get; init; }
 }

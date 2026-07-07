@@ -1,6 +1,4 @@
-﻿using SurveyBasket.Api.Contracts.Votes;
-
-namespace SurveyBasket.Api.Services;
+﻿namespace SurveyBasket.Api.Services;
 
 public class VoteService(ApplicationDbContext context) : IVoteService
 {
@@ -8,7 +6,7 @@ public class VoteService(ApplicationDbContext context) : IVoteService
 
     public async Task<Result> AddAsync(int pollId, string userId, VoteRequest request, CancellationToken cancellationToken)
     {
-        bool isPollAvailable = await _context.Polls.AnyAsync(x =>x.Id == pollId&& x.IsPublished&& x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow)&& x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
+        bool isPollAvailable = await _context.Polls.AnyAsync(x => x.Id == pollId && x.IsPublished && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow) && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
         if (!isPollAvailable)
             return Result.Failure(Errors<Poll>.NotFound);

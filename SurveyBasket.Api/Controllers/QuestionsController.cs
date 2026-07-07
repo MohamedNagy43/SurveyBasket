@@ -47,7 +47,7 @@ public class QuestionsController(IQuestionService questionService) : ControllerB
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
-    [HttpPut("{id}/ToggleStatus")]
+    [HttpPut("{id}/toggle-status")]
     [HasPermission(Permissions.UpdateQuestions)]
     public async Task<IActionResult> ToggleStatus(int pollId, int id, CancellationToken cancellationToken)
     {

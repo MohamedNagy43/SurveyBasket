@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using OneOf;
-using SurveyBasket.Api.Abstractions.Consts;
 using SurveyBasket.Api.Helpers;
 using System.Security.Cryptography;
 using System.Text;
@@ -73,11 +72,8 @@ public class AuthService(
 
         if (!result.Succeeded)
         {
-            foreach (var error in result.Errors)
-            {
-                _logger.LogError("Error Code: {Code} Description: {Description}", error.Code, error.Description);
-            }
-            return Result.Failure(new Error("ServerError", "Something went Wrong", 500));
+            var error = result.Errors.First();
+            return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
         }
 
         string token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
@@ -135,7 +131,10 @@ public class AuthService(
         if (await _userManager.FindByEmailAsync(email) is not { } user)
             return Result.Success();
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        if (!user.EmailConfirmed)
+            return Result.Failure(UserErrors.EmailNotConfirmed with { StatusCode = StatusCodes.Status400BadRequest });
+
+        string token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
         _logger.LogInformation("reset password Code : {code}", code);

@@ -1,11 +1,10 @@
 ﻿
 using Hangfire;
 using Microsoft.VisualBasic;
-using System.Linq.Expressions;
 
 namespace SurveyBasket.Api.Services;
 
-public class PollService(ApplicationDbContext context,INotificationService notificationService) : IPollService
+public class PollService(ApplicationDbContext context, INotificationService notificationService) : IPollService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly INotificationService _notificationService = notificationService;
@@ -41,7 +40,6 @@ public class PollService(ApplicationDbContext context,INotificationService notif
 
         return Result.Success(response.AsEnumerable());
     }
-
     public async Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default)
     {
         Poll? poll = await _context.Polls.FindAsync(id, cancellationToken);
@@ -51,17 +49,6 @@ public class PollService(ApplicationDbContext context,INotificationService notif
             :
             Result.Failure<PollResponse>(Errors<Poll>.NotFound);
     }
-
-    public async Task<Result<PollResponse>> GetAsync(Expression<Func<Poll, bool>> criteria, CancellationToken cancellationToken = default)
-    {
-        Poll? poll = await _context.Polls.FirstOrDefaultAsync(criteria, cancellationToken);
-
-        return (poll is not null) ?
-            Result.Success(poll.Adapt<PollResponse>())
-            :
-            Result.Failure<PollResponse>(Errors<Poll>.NotFound);
-    }
-
     public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
         bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title, cancellationToken);
@@ -75,18 +62,15 @@ public class PollService(ApplicationDbContext context,INotificationService notif
 
         return Result.Success(poll.Adapt<PollResponse>());
     }
-
     public async Task<Result<PollResponse>> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken = default)
     {
-        Poll? currentPoll = await _context.Polls.FindAsync(id,cancellationToken);
+        Poll? currentPoll = await _context.Polls.FindAsync(id, cancellationToken);
         if (currentPoll is null)
             return Result.Failure<PollResponse>(Errors<Poll>.NotFound);
 
-
-        bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id,cancellationToken);
+        bool IsExistTitle = await _context.Polls.AnyAsync(p => p.Title == request.Title && p.Id != id, cancellationToken);
         if (IsExistTitle)
             return Result.Failure<PollResponse>(PollErrors.DuplicatedTitle);
-
 
         request.Adapt(destination: currentPoll);
 
@@ -94,7 +78,6 @@ public class PollService(ApplicationDbContext context,INotificationService notif
 
         return Result.Success(currentPoll.Adapt<PollResponse>());
     }
-
     public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
 
@@ -108,7 +91,6 @@ public class PollService(ApplicationDbContext context,INotificationService notif
 
         return Result.Success();
     }
-
     public async Task<Result<PollResponse>> TogglePublishStatusAsync(int id, CancellationToken cancellationToken = default)
     {
         Poll? currentPoll = await _context.Polls.SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -123,5 +105,4 @@ public class PollService(ApplicationDbContext context,INotificationService notif
 
         return Result.Success(currentPoll.Adapt<PollResponse>());
     }
-
 }

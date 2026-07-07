@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System.Text.Json;
 
 namespace SurveyBasket.Api.Contracts.Roles;
 

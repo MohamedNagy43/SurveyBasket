@@ -6,7 +6,7 @@ using SurveyBasket.Api.Settings;
 
 namespace SurveyBasket.Api.Services;
 
-public class EmailService(IOptions<MailSettings> mailSettings,ILogger<EmailService> logger) : IEmailSender
+public class EmailService(IOptions<MailSettings> mailSettings, ILogger<EmailService> logger) : IEmailSender
 {
     private readonly MailSettings _mailSettings = mailSettings.Value;
     private readonly ILogger<EmailService> _logger = logger;
@@ -32,7 +32,7 @@ public class EmailService(IOptions<MailSettings> mailSettings,ILogger<EmailServi
 
         // Connection >> Smpt here from MailKit package
         using var smtpClient = new SmtpClient();
-        await smtpClient.ConnectAsync(_mailSettings.Host,_mailSettings.Port,SecureSocketOptions.StartTls);
+        await smtpClient.ConnectAsync(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
         await smtpClient.AuthenticateAsync(_mailSettings.Mail, _mailSettings.Password);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);

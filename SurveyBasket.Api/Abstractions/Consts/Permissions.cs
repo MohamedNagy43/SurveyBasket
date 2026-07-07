@@ -25,5 +25,5 @@ public class Permissions
 
 
     public static List<string> GetAllPermissions()
-        => typeof(Permissions).GetFields().Select(x =>x.GetValue(x)!.ToString()).ToList()!;
+        => typeof(Permissions).GetFields().Select(x => x.GetValue(x)!.ToString()).ToList()!;
 }

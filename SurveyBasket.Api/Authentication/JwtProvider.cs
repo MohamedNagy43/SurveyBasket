@@ -1,7 +1,4 @@
-﻿// Ignore Spelling: Jwt
-
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
 
@@ -10,7 +7,7 @@ namespace SurveyBasket.Api.Authentication;
 public class JwtProvider(IOptions<JwtOptions> jwtOption) : IJwtProvider
 {
     private readonly JwtOptions _jwtOption = jwtOption.Value;
-    public async Task<(string token, int ExpiresIn)> GenerateTokenAsync(ApplicationUser user,IEnumerable<string> roles, IEnumerable<string> permissions)
+    public async Task<(string token, int ExpiresIn)> GenerateTokenAsync(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
         // Claims
         List<Claim> claims =
@@ -18,12 +15,10 @@ public class JwtProvider(IOptions<JwtOptions> jwtOption) : IJwtProvider
                new Claim(ClaimTypes.Email,user.Email!),
                new Claim(ClaimTypes.NameIdentifier,user.Id),
                new Claim(ClaimTypes.Name,user.UserName!),
-               new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+               new Claim(JwtRegisteredClaimNames.Jti,Guid.CreateVersion7().ToString()),
                new Claim(nameof(roles),JsonSerializer.Serialize(roles),JsonClaimValueTypes.JsonArray),
                new Claim(nameof(permissions),JsonSerializer.Serialize(permissions),JsonClaimValueTypes.JsonArray)
         ];
-        //claims.AddRange(roles.Select(r => new Claim(nameof(roles), r)));
-        //claims.AddRange(permissions.Select(p => new Claim(nameof(permissions), p)));
 
         // signingCredentials
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.SecretKey));
@@ -41,7 +36,7 @@ public class JwtProvider(IOptions<JwtOptions> jwtOption) : IJwtProvider
 
         var token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
-        return (token: token, ExpiresIn: _jwtOption.ExpiryMinutes * 60);
+        return (token, ExpiresIn: _jwtOption.ExpiryMinutes * 60);
     }
 
     public string? ValidateToken(string token, bool ValidateLifeTime = true)

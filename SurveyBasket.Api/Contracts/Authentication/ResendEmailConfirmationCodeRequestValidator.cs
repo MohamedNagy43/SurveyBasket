@@ -1,9 +1,8 @@
 ﻿using FluentValidation;
-using SurveyBasket.Api.Abstractions.Consts;
 
 namespace SurveyBasket.Api.Contracts.Authentication;
 
-public class ResendEmailConfirmationCodeRequestValidator:AbstractValidator<ResendEmailConfirmationCodeRequest>
+public class ResendEmailConfirmationCodeRequestValidator : AbstractValidator<ResendEmailConfirmationCodeRequest>
 {
     public ResendEmailConfirmationCodeRequestValidator()
     {

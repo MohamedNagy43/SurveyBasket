@@ -33,7 +33,13 @@ public class NotificationService(
         }
 
         // send Notifications For Memebers
-        var users = await _userManager.Users.Where(x => x.EmailConfirmed).ToListAsync();
+        var users = await (
+                from user in _context.Users
+                join userRoles in _context.UserRoles
+                on user.Id equals userRoles.UserId
+                where userRoles.RoleId == DefaultRoles.MemberRoleId && user.EmailConfirmed
+                select new { user.FirstName, user.Email }
+            ).AsNoTracking().ToListAsync();
 
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
         foreach (var user in users)

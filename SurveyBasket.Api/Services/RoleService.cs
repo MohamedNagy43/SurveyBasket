@@ -42,7 +42,7 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, ApplicationDb
         var newRole = new ApplicationRole
         {
             Name = request.Name,
-            ConcurrencyStamp = Guid.NewGuid().ToString(),
+            ConcurrencyStamp = Guid.CreateVersion7().ToString(),
         };
         var result = await _roleManager.CreateAsync(newRole);
 

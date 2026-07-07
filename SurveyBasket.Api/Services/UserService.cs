@@ -1,6 +1,4 @@
-﻿using SurveyBasket.Api.Contracts.Roles;
-using SurveyBasket.Api.Contracts.Users;
-using System.Net.WebSockets;
+﻿using SurveyBasket.Api.Contracts.Users;
 
 namespace SurveyBasket.Api.Services;
 

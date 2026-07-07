@@ -1,11 +1,10 @@
 ﻿// Ignore Spelling: Validator
 
 using FluentValidation;
-using SurveyBasket.Api.Abstractions.Consts;
 
 namespace SurveyBasket.Api.Contracts.Authentication;
 
-public class LoginValidator:AbstractValidator<LoginRequest>
+public class LoginValidator : AbstractValidator<LoginRequest>
 {
 
     public LoginValidator()

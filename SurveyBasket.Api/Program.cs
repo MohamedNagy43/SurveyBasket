@@ -51,7 +51,7 @@ var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 using var Scope = scopeFactory.CreateScope();
 var NotificationService = Scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-RecurringJob.AddOrUpdate("SendNewPollNotificationAsync", () => NotificationService.SendNewPollNotificationAsync(null),Cron.Daily());
+RecurringJob.AddOrUpdate("SendNewPollNotificationAsync", () => NotificationService.SendNewPollNotificationAsync(null), Cron.Daily());
 
 app.UseCors();
 

@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace SurveyBasket.Api.Services;
+﻿namespace SurveyBasket.Api.Services;
 
 public interface IPollService
 {
@@ -8,7 +6,6 @@ public interface IPollService
     Task<Result<IEnumerable<PollResponse>>> GetCurrentAsyncV1(CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<PollResponseV2>>> GetCurrentAsyncV2(CancellationToken cancellationToken = default);
     Task<Result<PollResponse>> GetAsync(int id, CancellationToken cancellationToken = default);
-    Task<Result<PollResponse>> GetAsync(Expression<Func<Poll, bool>> criteria, CancellationToken cancellationToken = default);
     Task<Result<PollResponse>> AddAsync(PollRequest poll, CancellationToken cancellationToken = default);
     Task<Result<PollResponse>> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default);
     Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);

@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
-using SurveyBasket.Api.Authentication.Filters;
 using SurveyBasket.Api.Extension;
 using SurveyBasket.Api.Health;
 using SurveyBasket.Api.Settings;
@@ -48,8 +46,8 @@ public static class DependencyInjection
 
         // Private Extension Methods
         services
-            .AddDataBaseConfig(connectionString, configuration)
-            .AddEmailConfig(configuration)
+            .AddDataBaseConfig(connectionString)
+            .AddEmailConfig()
             .AddMapsterConfig()
             .AddRateLimitingConfig()
             .AddApiVersioningConfig()
@@ -71,18 +69,18 @@ public static class DependencyInjection
 
         return services;
     }
-    private static IServiceCollection AddEmailConfig(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddEmailConfig(this IServiceCollection services)
     {
         services.AddOptions<MailSettings>()
             .BindConfiguration(MailSettings.SectionName)
-            .ValidateOnStart()
-            .ValidateDataAnnotations();
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddScoped<IEmailSender, EmailService>();
 
         return services;
     }
-    private static IServiceCollection AddDataBaseConfig(this IServiceCollection services, string connectionString, IConfiguration configuration)
+    private static IServiceCollection AddDataBaseConfig(this IServiceCollection services, string connectionString)
     {
         return services.AddDbContext<ApplicationDbContext>(option =>
         {
@@ -193,7 +191,6 @@ public static class DependencyInjection
         services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         // Jwt Option
-        //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddOptions<JwtOptions>()
             .BindConfiguration(JwtOptions.SectionName)
             .ValidateDataAnnotations().ValidateOnStart();

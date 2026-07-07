@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SurveyBasket.Api.Persistence.EntitiesConfigurations;
 
@@ -7,8 +6,8 @@ public class PollConfigurations : IEntityTypeConfiguration<Poll>
 {
     public void Configure(EntityTypeBuilder<Poll> builder)
     {
-        builder.HasIndex(e=>e.Title).IsUnique();
-        builder.Property(e=>e.Title).HasMaxLength(100);
-        builder.Property(e=>e.Summary).HasMaxLength(1500);
+        builder.HasIndex(e => e.Title).IsUnique();
+        builder.Property(e => e.Title).HasMaxLength(100);
+        builder.Property(e => e.Summary).HasMaxLength(1500);
     }
 }

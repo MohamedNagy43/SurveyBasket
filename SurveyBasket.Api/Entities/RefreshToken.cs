@@ -18,7 +18,7 @@ public class RefreshToken
     }
     public RefreshToken()
     {
-        
+
     }
     public void Revoke()
     {

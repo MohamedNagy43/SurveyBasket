@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SurveyBasket.Api.Abstractions.Consts;
 
 namespace SurveyBasket.Api.Persistence.EntitiesConfigurations.IdentityConfigurations;
 
